@@ -9,4 +9,9 @@ export class CompaniesService {
         const company = await this.prisma.company.create({ data: {name: data.name, description: data.description, employerId: employerId } });
         return company;
 }
+async findAll(employerId: string){
+     const employerid = await this.prisma.company.findMany({ where: {employerId: employerId }})
+        return employerid;
 }
+}
+

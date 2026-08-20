@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req } from "@nestjs/common";
+import { Body, Controller, Post, Req, Get } from "@nestjs/common";
 import { CompaniesService } from "./companies.service";
 import { CreateCompanyDto } from "./dto/create-company.dto";
 import type  { Request } from "express";
@@ -12,6 +12,10 @@ export class CompaniesController {
         return await this.companiesService.create(data, req.user.sub);
     }
     
+    @Get()
+    async findAll(@Req()req: Request){
+        return await this.companiesService.findAll(req.user.sub);
+    }
 }
 
 
