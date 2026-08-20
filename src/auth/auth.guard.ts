@@ -3,15 +3,18 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-} from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
-import { JwtService } from "@nestjs/jwt";
-import { Request } from "express";
-import { IS_PUBLIC_KEY } from "./decorators/skip-auth-decorators";
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
+import { IS_PUBLIC_KEY } from './decorators/skip-auth-decorators';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService, private reflector: Reflector) {}
+  constructor(
+    private jwtService: JwtService,
+    private reflector: Reflector,
+  ) {}
 
   /**
    * Get the JWT token from the request header and verify it
@@ -40,9 +43,9 @@ export class AuthGuard implements CanActivate {
       });
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      request["user"] = payload;
+      request['user'] = payload;
     } catch {
-      throw new UnauthorizedException("Invalid or Expired Token");
+      throw new UnauthorizedException('Invalid or Expired Token');
     }
     return true;
   }
@@ -53,12 +56,14 @@ export class AuthGuard implements CanActivate {
    * @returns
    */
   private extractToken(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(" ") ?? [];
-    if (type === "Bearer" && token) {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    if (type === 'Bearer' && token) {
       return token;
     }
 
     const queryToken = request.query?.token ?? request.query?.access_token;
-    return typeof queryToken === "string" && queryToken.length > 0 ? queryToken : undefined;
+    return typeof queryToken === 'string' && queryToken.length > 0
+      ? queryToken
+      : undefined;
   }
 }
