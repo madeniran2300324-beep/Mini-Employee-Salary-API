@@ -39,7 +39,7 @@ model Company {
 enum EmployeeStatus {
   ACTIVE
   SUSPENDED
-  INACTIVE
+  ON_LEAVE
 }
 
 model Employee {
