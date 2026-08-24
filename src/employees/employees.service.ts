@@ -1,35 +1,48 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
 
 @Injectable()
 export class EmployeesService {
-    private employees:{
-    id: number ; //properties and types should nenevr be in quotes
-    name: string;
-    role: string;
-    baseSalary:number
-    }[] = []; //this closes a type definition
-    private idCounter = 1;
+  constructor(private prisma: PrismaService) {}
+  async create(data: CreateEmployeeDto, companyId: string) {
+    const employee = await this.prisma.employee.create({ 
+      data: { 
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        employeeNumber: data.employeeNumber,
+        jobTitle: data.jobTitle,
+        companyId: companyId
+      }
+    });
+    return employee;
+  }
+  async findAll(companyId: string) {
+    const employees = await this.prisma.employee.findMany({ where: {companyId: companyId, status: { in: ['ACTIVE', 'ON_LEAVE'] } } })
+    return employees;
+  }
+  async findOne(employeeId: string) {
+    const employee = await this.prisma.employee.findUnique({ where: { id: employeeId } })
+    return employee;
+  }
+  async update(employeeId: string, data: UpdateEmployeeDto) {
+    const employee = await this.prisma.employee.update({ where: { id: employeeId}, 
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        employeeNumber: data.employeeNumber,
+        jobTitle: data.jobTitle,
+        status: data.status
+      }
+    });
+    return employee;
+  }
+  async delete(employeeId: string){
+    const employee = await this.prisma.employee.delete({ where: {id: employeeId } })
+    return employee;
+  }
 
-    addEmployee(name: string,  role: string, baseSalary: number){
-        const employee = {id: this.idCounter, name:name, role:role, baseSalary: baseSalary}
-        this.employees.push(employee)
-        this.idCounter++
-        return employee
-    }
-
-    getAllEmployees(){
-    return this.employees
-    }
-
-    getEmployeePay(id: number){
-        const  employee = this.employees.find(emp => emp.id === id)
-        if (!employee) return null;
-        const netPay = employee.baseSalary * 0.9
-        return{ name: employee.name, netPay}
-    }
-
-    deleteEmployee(id: number){
-        this.employees = this.employees.filter(emp => emp.id !== id)
-        return ('Employee deleted')
-    }
 }
