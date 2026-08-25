@@ -8,7 +8,7 @@ import {
   Patch,
   UseGuards,
   Delete,
-  Query
+  Query,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
@@ -33,10 +33,15 @@ export class EmployeesController {
   async findAll(
     @Query('page') page: string,
     @Query('limit') limit: string,
-    @Param('companyId') companyId: string) {
-    const pageNumber = Number(page) || 1
+    @Param('companyId') companyId: string,
+  ) {
+    const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 20;
-    return await this.employeesService.findAll(companyId, pageNumber, limitNumber);
+    return await this.employeesService.findAll(
+      companyId,
+      pageNumber,
+      limitNumber,
+    );
   }
   @UseGuards(CompanyOwnershipGuard, EmployeeOwnershipGuard)
   @Get(':employeeId')

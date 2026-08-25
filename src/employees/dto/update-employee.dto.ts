@@ -1,5 +1,5 @@
 import { EmployeeStatus } from '@prisma/client';
-import { IsNotEmpty, IsString, IsEmail, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsEnum } from 'class-validator';
 
 export class UpdateEmployeeDto {
   @IsString()
