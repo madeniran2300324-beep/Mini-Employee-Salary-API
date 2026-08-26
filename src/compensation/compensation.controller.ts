@@ -7,6 +7,7 @@ import {
   Get,
   Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { CompensationService } from './compensation.service';
 import { CreateCompensationDto } from './dto/create-compensation.dto';
@@ -32,8 +33,16 @@ export class CompensationController {
   async findAll(
     @Param('employeeId') employeeId: string,
     @Param('companyId') companyId: string,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
   ) {
-    return await this.compensationService.findAll(employeeId);
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 20;
+    return await this.compensationService.findAll(
+      employeeId,
+      pageNumber,
+      limitNumber,
+    );
   }
   @UseGuards(
     CompanyOwnershipGuard,
@@ -49,12 +58,16 @@ export class CompensationController {
   ) {
     return await this.compensationService.update(compensationId, data);
   }
-  @UseGuards(CompanyOwnershipGuard, EmployeeOwnershipGuard, CompensationOwnershipGuard)
+  @UseGuards(
+    CompanyOwnershipGuard,
+    EmployeeOwnershipGuard,
+    CompensationOwnershipGuard,
+  )
   @Delete(':compensationId')
   async delete(
     @Param('employeeId') employeeId: string,
     @Param('compensationId') compensationId: string,
-    @Param('companyId') companyId: string
+    @Param('companyId') companyId: string,
   ) {
     return await this.compensationService.delete(compensationId);
   }

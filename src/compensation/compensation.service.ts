@@ -17,12 +17,22 @@ export class CompensationService {
     });
     return compensation;
   }
-  async findAll(employeeId: string) {
+  async findAll(employeeId: string, page: number = 1, limit: number = 20) {
+    const skip = (page - 1) * limit;
     const compensations = await this.prisma.compensation.findMany({
       where: { employeeId: employeeId },
       orderBy: { effectiveFrom: 'desc' },
+      skip: skip,
+      take: limit,
     });
-    return compensations;
+    const total = await this.prisma.compensation.count({
+      where: { employeeId: employeeId },
+    });
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data: compensations,
+      meta: { page: page, limit: limit, total: total, totalPages: totalPages },
+    };
   }
   async update(compensationId: string, data: UpdateCompensationDto) {
     const compensation = await this.prisma.compensation.update({
