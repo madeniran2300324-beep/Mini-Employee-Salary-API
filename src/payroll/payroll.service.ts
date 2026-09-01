@@ -77,4 +77,43 @@ export class PayrollService {
     await this.prisma.paymentRecord.createMany({ data: finalPaymentRecords });
     return payroll;
   }
+  async findAll(companyId: string, page: number = 1, limit: number = 20) {
+    const skip = (page - 1) * limit;
+    const payrolls = await this.prisma.payroll.findMany({
+      where: { companyId: companyId },
+      skip: skip,
+      take: limit,
+      orderBy: { payrollMonth: 'desc' },
+    });
+    const total = await this.prisma.payroll.count({
+      where: { companyId: companyId },
+    });
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data: payrolls,
+      meta: { page: page, limit: limit, total: total, totalPages: totalPages },
+    };
+  }
+  async findOne(payrollId: string) {
+    const payroll = await this.prisma.payroll.findUnique({
+      where: { id: payrollId },
+    });
+    return payroll;
+  }
+  async findPayments(payrollId: string, page: number = 1, limit: number = 20) {
+    const skip = (page - 1) * limit;
+    const paymentRecords = await this.prisma.paymentRecord.findMany({
+      where: { payrollId: payrollId },
+      skip: skip,
+      take: limit,
+    });
+    const total = await this.prisma.paymentRecord.count({
+      where: { payrollId: payrollId }
+    });
+    const totalPages = Math.ceil(total / limit);
+    return {
+      data: paymentRecords,
+      meta: { page: page, limit: limit, total: total, totalPages: totalPages },
+    };
+  }
 }
