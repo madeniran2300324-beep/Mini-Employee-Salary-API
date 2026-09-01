@@ -15,9 +15,9 @@ export class PayrollService {
   ) {}
   async run(companyId: string) {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const payrollMonth = new Date(year, month, 1);
+    const year = today.getUTCFullYear();
+    const month = today.getUTCMonth();
+    const payrollMonth = new Date(Date.UTC(year, month, 1));
     const existingPayroll = await this.prisma.payroll.findUnique({
       where: {
         companyId_payrollMonth: {
