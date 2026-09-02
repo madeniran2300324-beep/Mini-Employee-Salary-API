@@ -51,4 +51,11 @@ export class CompensationService {
     });
     return compensation;
   }
+  async findActiveForDate(employeeId: string, targetDate: Date) {
+    const compensation = await this.prisma.compensation.findFirst({
+      where: { employeeId: employeeId, effectiveFrom: { lte: targetDate } },
+      orderBy: { effectiveFrom: 'desc' },
+    });
+    return compensation;
+  }
 }

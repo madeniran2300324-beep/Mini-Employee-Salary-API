@@ -6,6 +6,7 @@ import { CompensationService } from "./compensation.service";
 @Module({
     controllers: [CompensationController],
     providers: [CompensationService],
-    imports: [PrismaModule]
+    imports: [PrismaModule],
+    exports: [CompensationService]
 })
 export class CompensationModule {}

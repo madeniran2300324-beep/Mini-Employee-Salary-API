@@ -6,8 +6,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { CompaniesModule } from './companies/companies.module';
 import { CompensationModule } from './compensation/compensation.module';
+import { PayrollModule } from './payroll/payroll.module';
 @Module({
-  imports: [CompensationModule, EmployeesModule, PrismaModule, AuthModule, CompaniesModule],
+  imports: [CompensationModule, EmployeesModule, PrismaModule, AuthModule, CompaniesModule, PayrollModule],
   controllers: [AppController],
   providers: [AppService],
 })
