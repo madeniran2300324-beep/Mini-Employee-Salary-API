@@ -50,16 +50,16 @@ export class PayrollService {
         payrollMonth,
       );
       if (!compensation) {
-       await this.prisma.payroll.create({
-          data:{
-          companyId: companyId,
-          payrollMonth: payrollMonth,
-          status: 'FAILED',
-          totalEmployees: 0,
-          totalAmount: 0
-          }
+        await this.prisma.payroll.create({
+          data: {
+            companyId: companyId,
+            payrollMonth: payrollMonth,
+            status: 'FAILED',
+            totalEmployees: 0,
+            totalAmount: 0,
+          },
         });
-        
+
         throw new BadRequestException(
           `Employee ${employee.id} has no compensation record`,
         );
@@ -93,6 +93,17 @@ export class PayrollService {
     await this.prisma.paymentRecord.createMany({ data: finalPaymentRecords });
     return payroll;
   }
+  async runAllCompanies() {
+    const companies = await this.prisma.company.findMany();
+    for (const company of companies) {
+      try {
+        await this.run(company.id);
+      } catch (error) {
+        console.log(`Payroll failed for company ${company.id}:`, error.message);
+      }
+    }
+  }
+
   async findAll(companyId: string, page: number = 1, limit: number = 20) {
     const skip = (page - 1) * limit;
     const payrolls = await this.prisma.payroll.findMany({

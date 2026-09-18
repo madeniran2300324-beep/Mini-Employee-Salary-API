@@ -7,6 +7,7 @@ import { CompensationModule } from '../compensation/compensation.module';
 @Module({
   controllers: [PayrollController],
   providers: [PayrollService],
-  imports: [PrismaModule, CompensationModule]
+  imports: [PrismaModule, CompensationModule],
+  exports: [PayrollService]
 })
 export class PayrollModule {}
