@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CompensationService } from '../compensation/compensation.service';
 import { PaymentStatus } from '@prisma/client';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class PayrollService {
@@ -104,6 +105,10 @@ export class PayrollService {
     }
   }
 
+  @Cron('0 0 0 * * *')
+  async handleMonthEndPayroll(){
+    
+  }
   async findAll(companyId: string, page: number = 1, limit: number = 20) {
     const skip = (page - 1) * limit;
     const payrolls = await this.prisma.payroll.findMany({
