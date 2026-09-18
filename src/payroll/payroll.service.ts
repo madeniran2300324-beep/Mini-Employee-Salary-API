@@ -107,7 +107,12 @@ export class PayrollService {
 
   @Cron('0 0 0 * * *')
   async handleMonthEndPayroll(){
-    
+    const today = new Date();
+    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+    if (tomorrow.getUTCDate() !== 1){
+      return;
+    }
+    await this.runAllCompanies();
   }
   async findAll(companyId: string, page: number = 1, limit: number = 20) {
     const skip = (page - 1) * limit;
