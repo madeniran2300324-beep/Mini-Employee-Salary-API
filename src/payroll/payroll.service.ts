@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CompensationService } from '../compensation/compensation.service';
 import { PaymentStatus } from '@prisma/client';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class PayrollService {
@@ -27,7 +28,13 @@ export class PayrollService {
       },
     });
     if (existingPayroll) {
-      throw new ConflictException();
+      if (existingPayroll.status === 'FAILED') {
+        await this.prisma.payroll.delete({ where: { id: existingPayroll.id } });
+      } else {
+        throw new ConflictException(
+          'Payroll for this month has already been run.',
+        );
+      }
     }
     const employees = await this.prisma.employee.findMany({
       where: { companyId: companyId, status: { in: ['ACTIVE', 'ON_LEAVE'] } },
@@ -44,6 +51,16 @@ export class PayrollService {
         payrollMonth,
       );
       if (!compensation) {
+        await this.prisma.payroll.create({
+          data: {
+            companyId: companyId,
+            payrollMonth: payrollMonth,
+            status: 'FAILED',
+            totalEmployees: 0,
+            totalAmount: 0,
+          },
+        });
+
         throw new BadRequestException(
           `Employee ${employee.id} has no compensation record`,
         );
@@ -77,6 +94,26 @@ export class PayrollService {
     await this.prisma.paymentRecord.createMany({ data: finalPaymentRecords });
     return payroll;
   }
+  async runAllCompanies() {
+    const companies = await this.prisma.company.findMany();
+    for (const company of companies) {
+      try {
+        await this.run(company.id);
+      } catch (error) {
+        console.log(`Payroll failed for company ${company.id}:`, error.message);
+      }
+    }
+  }
+
+  @Cron('0 0 0 * * *')
+  async handleMonthEndPayroll(){
+    const today = new Date();
+    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+    if (tomorrow.getUTCDate() !== 1){
+      return;
+    }
+    await this.runAllCompanies();
+  }
   async findAll(companyId: string, page: number = 1, limit: number = 20) {
     const skip = (page - 1) * limit;
     const payrolls = await this.prisma.payroll.findMany({
@@ -108,7 +145,7 @@ export class PayrollService {
       take: limit,
     });
     const total = await this.prisma.paymentRecord.count({
-      where: { payrollId: payrollId }
+      where: { payrollId: payrollId },
     });
     const totalPages = Math.ceil(total / limit);
     return {
