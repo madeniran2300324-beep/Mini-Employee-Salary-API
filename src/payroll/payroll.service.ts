@@ -50,6 +50,16 @@ export class PayrollService {
         payrollMonth,
       );
       if (!compensation) {
+       await this.prisma.payroll.create({
+          data:{
+          companyId: companyId,
+          payrollMonth: payrollMonth,
+          status: 'FAILED',
+          totalEmployees: 0,
+          totalAmount: 0
+          }
+        });
+        
         throw new BadRequestException(
           `Employee ${employee.id} has no compensation record`,
         );
