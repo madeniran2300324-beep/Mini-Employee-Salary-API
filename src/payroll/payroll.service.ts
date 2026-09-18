@@ -27,7 +27,13 @@ export class PayrollService {
       },
     });
     if (existingPayroll) {
-      throw new ConflictException();
+      if (existingPayroll.status === 'FAILED') {
+        await this.prisma.payroll.delete({ where: { id: existingPayroll.id } });
+      } else {
+        throw new ConflictException(
+          'Payroll for this month has already been run.',
+        );
+      }
     }
     const employees = await this.prisma.employee.findMany({
       where: { companyId: companyId, status: { in: ['ACTIVE', 'ON_LEAVE'] } },
@@ -108,7 +114,7 @@ export class PayrollService {
       take: limit,
     });
     const total = await this.prisma.paymentRecord.count({
-      where: { payrollId: payrollId }
+      where: { payrollId: payrollId },
     });
     const totalPages = Math.ceil(total / limit);
     return {
