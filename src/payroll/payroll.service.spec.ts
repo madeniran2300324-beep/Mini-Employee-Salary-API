@@ -44,4 +44,17 @@ describe('PayrollService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+  it('throws ConflictException when payroll already COMPLETED', async () => {
+    prisma.payroll.findUnique.mockResolvedValue({
+      id: 'existing-id',
+      status: 'COMPLETED',
+    });
+
+    await expect(service.run('some-company-id')).rejects.toThrow(
+      'Payroll for this month has already been run.',
+    );
+
+    expect(prisma.employee.findMany).not.toHaveBeenCalled();
+  });
 });
