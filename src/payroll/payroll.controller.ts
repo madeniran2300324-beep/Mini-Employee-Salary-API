@@ -2,6 +2,7 @@ import { Get, Post, Controller, UseGuards, Param, Query } from '@nestjs/common';
 import { CompanyOwnershipGuard } from '../common/guards/company-ownership.guard';
 import { PayrollService } from './payroll.service';
 import { PayrollOwnershipGuard } from '../common/guards/payroll-ownership.guard';
+import { PaginationDto } from '../common/dto/pagination.dto';
 @Controller('companies/:companyId/payrolls')
 export class PayrollController {
   constructor(private payrollService: PayrollService) {}
@@ -14,15 +15,12 @@ export class PayrollController {
   @Get()
   async findAll(
     @Param('companyId') companyId: string,
-    @Query('page') page: string,
-    @Query('limit') limit: string,
+    @Query() pagination: PaginationDto
   ) {
-    const pageNumber = Number(page) || 1;
-    const limitNumber = Number(limit) || 20;
     return await this.payrollService.findAll(
       companyId,
-      pageNumber,
-      limitNumber,
+      pagination.page,
+      pagination.limit,
     );
   }
   @UseGuards(CompanyOwnershipGuard, PayrollOwnershipGuard)
@@ -38,15 +36,12 @@ export class PayrollController {
   async findPayments(
     @Param('companyId') companyId: string,
     @Param('payrollId') payrollId: string,
-    @Query('page') page: string,
-    @Query('limit') limit: string,
+    @Query() pagination: PaginationDto,
   ) {
-    const pageNumber = Number(page) || 1;
-    const limitNumber = Number(limit) || 20;
     return await this.payrollService.findPayments(
       payrollId,
-      pageNumber,
-      limitNumber,
+      pagination.page,
+      pagination.limit,
     );
   }
 }

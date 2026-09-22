@@ -15,6 +15,7 @@ import { UpdateCompensationDto } from './dto/update-compensation.dto';
 import { CompensationOwnershipGuard } from '../common/guards/compensation-ownership.guard';
 import { EmployeeOwnershipGuard } from '../common/guards/employee-ownership.guard';
 import { CompanyOwnershipGuard } from '../common/guards/company-ownership.guard';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('companies/:companyId/employees/:employeeId/compensation')
 export class CompensationController {
@@ -33,15 +34,12 @@ export class CompensationController {
   async findAll(
     @Param('employeeId') employeeId: string,
     @Param('companyId') companyId: string,
-    @Query('page') page: string,
-    @Query('limit') limit: string,
+    @Query() pagination: PaginationDto
   ) {
-    const pageNumber = Number(page) || 1;
-    const limitNumber = Number(limit) || 20;
     return await this.compensationService.findAll(
       employeeId,
-      pageNumber,
-      limitNumber,
+      pagination.page,
+      pagination.limit,
     );
   }
   @UseGuards(
