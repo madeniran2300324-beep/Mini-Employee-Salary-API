@@ -84,6 +84,7 @@ describe('PayrollService', () => {
     expect(result.status).toBe('COMPLETED');
     expect(prisma.paymentRecord.createMany).toHaveBeenCalled();
   });
+
   it('creates FAILED payroll and throws when employee has no compensation', async () => {
     prisma.payroll.findUnique.mockResolvedValue(null);
     prisma.employee.findMany.mockResolvedValue([
@@ -104,5 +105,55 @@ describe('PayrollService', () => {
         totalAmount: 0,
       },
     });
+  });
+
+  it('completes a normal first-time run with correct totals', async () => {
+    prisma.payroll.findUnique.mockResolvedValue(null);
+    prisma.employee.findMany.mockResolvedValue([
+      { id: 'employee-1', companyId: 'some-company-id' },
+      { id: 'employee-2', companyId: 'some-company-id' },
+    ]);
+    compensationService.findActiveForDate
+      .mockResolvedValueOnce({ salary: 500000 })
+      .mockResolvedValueOnce({ salary: 400000 });
+    prisma.payroll.create.mockResolvedValue({
+      id: 'new-payroll-id',
+      status: 'COMPLETED',
+      totalEmployees: 2,
+      totalAmount: 900000,
+    });
+
+    const result = await service.run('some-company-id');
+
+    expect(prisma.payroll.delete).not.toHaveBeenCalled();
+    expect(prisma.payroll.create).toHaveBeenCalledWith({
+      data: {
+        companyId: 'some-company-id',
+        payrollMonth: expect.any(Date),
+        totalEmployees: 2,
+        totalAmount: 900000,
+        status: 'COMPLETED',
+        processedAt: expect.any(Date),
+      },
+    });
+    expect(result.totalEmployees).toBe(2);
+    expect(prisma.paymentRecord.createMany).toHaveBeenCalled();
+  });
+
+  it('runAllCompanies continues to next company after one fails', async () => {
+    prisma.company.findMany.mockResolvedValue([
+      { id: 'company-1' },
+      { id: 'company-2' },
+    ]);
+    jest
+      .spyOn(service, 'run')
+      .mockRejectedValueOnce(new Error('fail'))
+      .mockResolvedValueOnce({ id: 'payroll-2' } as any);
+
+    await service.runAllCompanies();
+
+    expect(service.run).toHaveBeenCalledWith('company-1');
+    expect(service.run).toHaveBeenCalledWith('company-2');
+    expect(service.run).toHaveBeenCalledTimes(2);
   });
 });
