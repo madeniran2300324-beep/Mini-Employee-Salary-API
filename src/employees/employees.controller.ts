@@ -15,6 +15,7 @@ import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { CompanyOwnershipGuard } from '../common/guards/company-ownership.guard';
 import { EmployeeOwnershipGuard } from '../common/guards/employee-ownership.guard';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('companies/:companyId/employees')
 export class EmployeesController {
@@ -31,16 +32,13 @@ export class EmployeesController {
   @UseGuards(CompanyOwnershipGuard)
   @Get()
   async findAll(
-    @Query('page') page: string,
-    @Query('limit') limit: string,
+    @Query() pagination: PaginationDto,
     @Param('companyId') companyId: string,
   ) {
-    const pageNumber = Number(page) || 1;
-    const limitNumber = Number(limit) || 20;
     return await this.employeesService.findAll(
       companyId,
-      pageNumber,
-      limitNumber,
+      pagination.page,
+      pagination.limit,
     );
   }
   @UseGuards(CompanyOwnershipGuard, EmployeeOwnershipGuard)
