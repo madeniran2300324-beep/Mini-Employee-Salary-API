@@ -8,10 +8,12 @@ describe('App (e2e)', () => {
   let accessToken: string;
   let companyId: string;
   let employeeId: string;
+  let secondAccessToken: string;
 
   const uniqueSuffix = Date.now();
   const testEmail = `e2e-test-${uniqueSuffix}@example.com`;
   const testPassword = 'SecurePass123!';
+  const secondEmail = `e2e-test-second-${uniqueSuffix}@example.com`;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -129,4 +131,57 @@ describe('App (e2e)', () => {
 
     expect(res.status).toBe(400);
   });
+
+  it('registers a second, unrelated employer', async () => {
+  const res = await request(app.getHttpServer()).post('/auth/register').send({
+    firstName: 'Second',
+    lastName: 'Employer',
+    email: secondEmail,
+    password: testPassword,
+  });
+
+  expect(res.status).toBe(201);
+});
+
+it('logs in as the second employer', async () => {
+  const res = await request(app.getHttpServer()).post('/auth/login').send({
+    email: secondEmail,
+    password: testPassword,
+  });
+
+  expect(res.status).toBe(201);
+  secondAccessToken = res.body.access_token;
+});
+
+it('blocks the second employer from viewing the first employer\'s company', async () => {
+  const res = await request(app.getHttpServer())
+    .get(`/companies/${companyId}`)
+    .set('Authorization', `Bearer ${secondAccessToken}`);
+
+  expect(res.status).toBe(404);
+});
+
+it('blocks the second employer from listing the first employer\'s employees', async () => {
+  const res = await request(app.getHttpServer())
+    .get(`/companies/${companyId}/employees`)
+    .set('Authorization', `Bearer ${secondAccessToken}`);
+
+  expect(res.status).toBe(404);
+});
+
+it('blocks the second employer from running payroll on the first employer\'s company', async () => {
+  const res = await request(app.getHttpServer())
+    .post(`/companies/${companyId}/payrolls/run`)
+    .set('Authorization', `Bearer ${secondAccessToken}`);
+
+  expect(res.status).toBe(404);
+});
+
+it('blocks the second employer from viewing the first employer\'s payroll history', async () => {
+  const res = await request(app.getHttpServer())
+    .get(`/companies/${companyId}/payrolls`)
+    .set('Authorization', `Bearer ${secondAccessToken}`);
+
+  expect(res.status).toBe(404);
+});
 });
