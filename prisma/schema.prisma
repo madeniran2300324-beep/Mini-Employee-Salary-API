@@ -117,3 +117,7 @@ model PaymentRecord {
   payroll       Payroll       @relation(fields: [payrollId], references: [id])
   employee      Employee      @relation(fields: [employeeId], references: [id])
 }
+   generator erd {
+     provider = "prisma-erd-generator"
+     output   = "../docs/erd.png"
+   }

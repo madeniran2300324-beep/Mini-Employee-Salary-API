@@ -6,11 +6,13 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 @Controller('companies/:companyId/payrolls')
 export class PayrollController {
   constructor(private payrollService: PayrollService) {}
+
   @UseGuards(CompanyOwnershipGuard)
   @Post('run')
   async run(@Param('companyId') companyId: string) {
     return await this.payrollService.run(companyId);
   }
+
   @UseGuards(CompanyOwnershipGuard)
   @Get()
   async findAll(
@@ -23,6 +25,7 @@ export class PayrollController {
       pagination.limit,
     );
   }
+
   @UseGuards(CompanyOwnershipGuard, PayrollOwnershipGuard)
   @Get(':payrollId')
   async findOne(
@@ -31,6 +34,7 @@ export class PayrollController {
   ) {
     return await this.payrollService.findOne(payrollId);
   }
+  
   @UseGuards(CompanyOwnershipGuard, PayrollOwnershipGuard)
   @Get(':payrollId/payments')
   async findPayments(

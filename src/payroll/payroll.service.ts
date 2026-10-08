@@ -106,10 +106,10 @@ export class PayrollService {
   }
 
   @Cron('0 0 0 * * *')
-  async handleMonthEndPayroll(){
+  async handleMonthEndPayroll() {
     const today = new Date();
     const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-    if (tomorrow.getUTCDate() !== 1){
+    if (tomorrow.getUTCDate() !== 1) {
       return;
     }
     await this.runAllCompanies();
